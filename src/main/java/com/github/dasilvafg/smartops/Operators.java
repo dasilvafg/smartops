@@ -112,9 +112,21 @@ public final class Operators {
 	}
 
 	/**
-	 * Determines whether a {@link CharSequence} is blank. A
-	 * {@link CharSequence} will be considered blank if it is null or only
-	 * formed of these characters: {@code \t\n\u000B\f\r\u0020}.
+	 * Determines whether a {@link CharSequence} is blank.
+	 * 
+	 * <p>
+	 * A {@link CharSequence} will be considered blank if it's null or only
+	 * formed of these characters:
+	 * 
+	 * <ul>
+	 * <li>NUL (0x00)
+	 * <li>HORIZONTAL TAB (0x09)
+	 * <li>LINE FEED (0x0a)
+	 * <li>VERTICAL TAB (0x0b)
+	 * <li>FORM FEED (0x0c)
+	 * <li>CARRIAGE RETURN (0x0d)
+	 * <li>SPACE (0x20)<br>
+	 * <br>
 	 * 
 	 * @param seq
 	 *            The char sequence.
@@ -126,7 +138,8 @@ public final class Operators {
 		}
 		for (int i = 0; i < seq.length(); i++) {
 			char ch = seq.charAt(i);
-			if (ch != '\t' && ch != '\n' && ch != 0x0B && ch != '\f' && ch != '\r' && ch != ' ') {
+			if (ch != 0x00 && ch != '\t' && ch != '\n' && ch != 0x0B && ch != '\f' && ch != '\r'
+					&& ch != ' ') {
 				return false;
 			}
 		}
@@ -208,7 +221,8 @@ public final class Operators {
 	}
 
 	/**
-	 * Determines whether a string is a valid email address using the rules from
+	 * Determines whether a string is a valid email address according to the
+	 * rules from
 	 * <a href="https://www.rfc-editor.org/rfc/rfc3696#section-3">RFC-3696</a>.
 	 * 
 	 * @param addr
@@ -228,6 +242,10 @@ public final class Operators {
 	 * Converts a text string to plain ASCII by applying a {@link Normalizer
 	 * canonical decomposition} and removing the diacritical marks and control
 	 * characters.
+	 * 
+	 * <p>
+	 * This method will also replace back quotes with the apostrophe and the
+	 * dash with the hyphen.
 	 * 
 	 * @param str
 	 *            The string.
