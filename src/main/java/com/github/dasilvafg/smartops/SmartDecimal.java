@@ -356,6 +356,17 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
+	 * Divides this number by the denominator and multiplies by 100.
+	 * 
+	 * @param denominator
+	 *            The denominator.
+	 * @return The percentage.
+	 */
+	public SmartDecimal percentageOf(Object denominator) {
+		return divide(denominator).multiply(HUNDRED);
+	}
+
+	/**
 	 * Retrieves the enclosed {@link BigDecimal}.
 	 * 
 	 * @return The enclosed {@link BigDecimal}.
