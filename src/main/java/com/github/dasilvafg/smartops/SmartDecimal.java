@@ -12,8 +12,13 @@ import java.math.RoundingMode;
  * This class uses a {@link BigDecimal} for its numeric representation, and
  * delegates to that class most of its operations. Methods are designed to
  * accept three types of numeric values: {@link Number}, {@link String}, and
- * {@link SmartDecimal} itself. Scaling is never applied automatically during
- * arithmetic operations.
+ * {@link SmartDecimal} itself. When passing a {@link String} argument, the
+ * expression must be acceptable to {@link BigDecimal#BigDecimal(String)}. This
+ * validation can be performed by {@link Commons#isDecimal(String)}.
+ * 
+ * <p>
+ * Scaling is never applied automatically during arithmetic operations. Methods
+ * are provided to set precision, rounding mode, or both.
  * 
  * <p>
  * It is the caller's responsability to handle mathematical errors and special
@@ -88,6 +93,8 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * @param value
 	 *            The numeric value.
 	 * @return The {@link SmartDecimal} wrapper.
+	 * @throws NumberFormatException
+	 *             If the value cannot be converted to a {@link BigDecimal}.
 	 */
 	public static SmartDecimal of(Object value) {
 		return new SmartDecimal(value);
@@ -105,7 +112,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 		} else if (value instanceof String) {
 			mNumber = new BigDecimal((String) value);
 		} else {
-			throw new IllegalArgumentException("illegal argument: " + value);
+			throw new NumberFormatException("illegal argument: " + value);
 		}
 		if (mRounding == null) {
 			mScale = mNumber.scale();
@@ -202,10 +209,12 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * @param addend
 	 *            The number to add.
 	 * @return The new instance.
+	 * @throws NumberFormatException
+	 *             If the addend cannot be converted to a {@link BigDecimal}.
 	 */
 	public SmartDecimal add(Object addend) {
 		SmartDecimal copy = clone();
-		copy.mNumber = copy.mNumber.add(new SmartDecimal(addend).mNumber);
+		copy.mNumber = copy.mNumber.add(of(addend).mNumber);
 		return copy;
 	}
 
@@ -218,10 +227,13 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * @param subtrahend
 	 *            The number to subtract.
 	 * @return The new instance.
+	 * @throws NumberFormatException
+	 *             If the subtrahend cannot be converted to a
+	 *             {@link BigDecimal}.
 	 */
 	public SmartDecimal subtract(Object subtrahend) {
 		SmartDecimal copy = clone();
-		copy.mNumber = copy.mNumber.subtract(new SmartDecimal(subtrahend).mNumber);
+		copy.mNumber = copy.mNumber.subtract(of(subtrahend).mNumber);
 		return copy;
 	}
 
@@ -234,10 +246,13 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * @param multiplier
 	 *            The number to multiply.
 	 * @return The new instance.
+	 * @throws NumberFormatException
+	 *             If the multiplier cannot be converted to a
+	 *             {@link BigDecimal}.
 	 */
 	public SmartDecimal multiply(Object multiplier) {
 		SmartDecimal copy = clone();
-		copy.mNumber = copy.mNumber.multiply(new SmartDecimal(multiplier).mNumber);
+		copy.mNumber = copy.mNumber.multiply(of(multiplier).mNumber);
 		return copy;
 	}
 
@@ -252,10 +267,12 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * @param divisor
 	 *            The number to divide.
 	 * @return The new instance.
+	 * @throws NumberFormatException
+	 *             If the divisor cannot be converted to a {@link BigDecimal}.
 	 */
 	public SmartDecimal divide(Object divisor) {
 		SmartDecimal copy = clone();
-		copy.mNumber = copy.mNumber.divide(new SmartDecimal(divisor).mNumber, mScale, mRounding);
+		copy.mNumber = copy.mNumber.divide(of(divisor).mNumber, mScale, mRounding);
 		return copy;
 	}
 
@@ -291,16 +308,17 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * @param exponent
 	 *            The number to which this number will be raised.
 	 * @return The new instance.
+	 * @throws NumberFormatException
+	 *             If the exponent cannot be converted to a {@link BigDecimal}.
 	 */
 	public SmartDecimal power(Object exponent) {
 		if (exponent instanceof Byte || exponent instanceof Short || exponent instanceof Integer) {
 			// Use BigDecimal.pow()
-			return new SmartDecimal(mNumber.pow(((Number) exponent).intValue()));
+			return of(mNumber.pow(((Number) exponent).intValue()));
 		} else {
 			// Use logarithms
-			SmartDecimal product = new SmartDecimal(exponent)
-					.multiply(Math.log(mNumber.doubleValue()));
-			return new SmartDecimal(Math.exp(product.mNumber.doubleValue()));
+			SmartDecimal product = of(exponent).multiply(Math.log(mNumber.doubleValue()));
+			return of(Math.exp(product.mNumber.doubleValue()));
 		}
 	}
 
@@ -312,11 +330,12 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * @param degree
 	 *            The degree of the root.
 	 * @return The new instance.
+	 * @throws NumberFormatException
+	 *             If the degree cannot be converted to a {@link BigDecimal}.
 	 */
 	public SmartDecimal root(Object degree) {
-		double division = Math.log(mNumber.doubleValue())
-				/ new SmartDecimal(degree).mNumber.doubleValue();
-		return new SmartDecimal(Math.exp(division));
+		double division = Math.log(mNumber.doubleValue()) / of(degree).mNumber.doubleValue();
+		return of(Math.exp(division));
 	}
 
 	/**
@@ -326,6 +345,8 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * @param rate
 	 *            The percentage rate.
 	 * @return The new instance.
+	 * @throws NumberFormatException
+	 *             If the rate cannot be converted to a {@link BigDecimal}.
 	 */
 	public SmartDecimal timesPercent(Object rate) {
 		return multiply(rate).divide(HUNDRED);
@@ -338,6 +359,8 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * @param rate
 	 *            The percentage rate.
 	 * @return The new instance.
+	 * @throws NumberFormatException
+	 *             If the rate cannot be converted to a {@link BigDecimal}.
 	 */
 	public SmartDecimal plusPercent(Object rate) {
 		return add(timesPercent(rate));
@@ -350,6 +373,8 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * @param rate
 	 *            The percentage rate.
 	 * @return The new instance.
+	 * @throws NumberFormatException
+	 *             If the rate cannot be converted to a {@link BigDecimal}.
 	 */
 	public SmartDecimal minusPercent(Object rate) {
 		return subtract(timesPercent(rate));
@@ -361,6 +386,9 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * @param denominator
 	 *            The denominator.
 	 * @return The percentage.
+	 * @throws NumberFormatException
+	 *             If the denominator cannot be converted to a
+	 *             {@link BigDecimal}.
 	 */
 	public SmartDecimal percentageOf(Object denominator) {
 		return divide(denominator).multiply(HUNDRED);

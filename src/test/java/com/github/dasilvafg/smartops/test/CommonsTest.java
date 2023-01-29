@@ -1,17 +1,17 @@
 package com.github.dasilvafg.smartops.test;
 
-import static com.github.dasilvafg.smartops.Operators.capitalize;
-import static com.github.dasilvafg.smartops.Operators.coalesce;
-import static com.github.dasilvafg.smartops.Operators.isAlpha;
-import static com.github.dasilvafg.smartops.Operators.isBase64;
-import static com.github.dasilvafg.smartops.Operators.isBlank;
-import static com.github.dasilvafg.smartops.Operators.isDecimal;
-import static com.github.dasilvafg.smartops.Operators.isEmail;
-import static com.github.dasilvafg.smartops.Operators.isEmpty;
-import static com.github.dasilvafg.smartops.Operators.isHexa;
-import static com.github.dasilvafg.smartops.Operators.isNumeric;
-import static com.github.dasilvafg.smartops.Operators.isWord;
-import static com.github.dasilvafg.smartops.Operators.normalize;
+import static com.github.dasilvafg.smartops.Commons.capitalize;
+import static com.github.dasilvafg.smartops.Commons.coalesce;
+import static com.github.dasilvafg.smartops.Commons.isAlpha;
+import static com.github.dasilvafg.smartops.Commons.isBase64;
+import static com.github.dasilvafg.smartops.Commons.isBlank;
+import static com.github.dasilvafg.smartops.Commons.isDecimal;
+import static com.github.dasilvafg.smartops.Commons.isEmail;
+import static com.github.dasilvafg.smartops.Commons.isEmpty;
+import static com.github.dasilvafg.smartops.Commons.isHexa;
+import static com.github.dasilvafg.smartops.Commons.isNumeric;
+import static com.github.dasilvafg.smartops.Commons.isWord;
+import static com.github.dasilvafg.smartops.Commons.normalize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +30,7 @@ import org.w3c.dom.Document;
 
 import com.github.dasilvafg.smartops.SmartDecimal;
 
-public class OperatorTest {
+public class CommonsTest {
 
 	@Test
 	public void testIsEmpty() throws Exception {
@@ -184,7 +184,7 @@ public class OperatorTest {
 	}
 
 	@Test
-	public void testIsValidEmail() {
+	public void testIsEmail() {
 		assertFalse(isEmail(null));
 		assertFalse(isEmail(""));
 		assertFalse(isEmail("test"));
