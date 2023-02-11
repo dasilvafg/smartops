@@ -297,12 +297,14 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * The calculation is done using the following algorithm:
 	 * 
 	 * <ol>
-	 * <li>If the exponent is a {@link Byte}, {@link Short}, or {@link Integer},
-	 * this method delegates to {@link BigDecimal#pow(int)};
+	 * <li>If the exponent is a positive {@link Byte}, {@link Short}, or
+	 * {@link Integer}, this method delegates to {@link BigDecimal#pow(int)};
 	 * 
 	 * <li>Otherwise this method calculates the power using logarithms, allowing
 	 * the exponent to be a floting point value. In such case, this method uses
-	 * {@link Math#log(double)} and {@link Math#exp(double)}.
+	 * {@link Math#log(double)} and {@link Math#exp(double)} to solve the
+	 * equation:
+	 * <blockquote><code>x<sup>y</sup> = e<sup>y.log(x)</sup></code></blockquote>
 	 * </ol>
 	 * 
 	 * @param exponent
@@ -312,30 +314,37 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 *             If the exponent cannot be converted to a {@link BigDecimal}.
 	 */
 	public SmartDecimal power(Object exponent) {
-		if (exponent instanceof Byte || exponent instanceof Short || exponent instanceof Integer) {
+		if ((exponent instanceof Byte || exponent instanceof Short || exponent instanceof Integer)
+				&& ((Number) exponent).intValue() >= 0) {
 			// Use BigDecimal.pow()
 			return of(mNumber.pow(((Number) exponent).intValue()));
 		} else {
 			// Use logarithms
 			SmartDecimal product = of(exponent).multiply(Math.log(mNumber.doubleValue()));
-			return of(Math.exp(product.mNumber.doubleValue()));
+			return of(Math.exp(product.mNumber.doubleValue())).config(mScale, mRounding);
 		}
 	}
 
 	/**
 	 * Extracts an arbitrary root from this instance using logarithms, allowing
-	 * the degree to be a floating point value. This method uses
-	 * {@link Math#log(double)} and {@link Math#exp(double)}.
+	 * the index to be a floating point value.
 	 * 
-	 * @param degree
-	 *            The degree of the root.
+	 * <p>
+	 * This method uses {@link Math#log(double)} and {@link Math#exp(double)} to
+	 * solve the equation:
+	 * <blockquote><code>root(x,y) = e<sup>log(x)/y</sup></code></blockquote>
+	 * where x is this number and y is the index.
+	 * </p>
+	 * 
+	 * @param index
+	 *            The index of the root.
 	 * @return The new instance.
 	 * @throws NumberFormatException
-	 *             If the degree cannot be converted to a {@link BigDecimal}.
+	 *             If the index cannot be converted to a {@link BigDecimal}.
 	 */
-	public SmartDecimal root(Object degree) {
-		double division = Math.log(mNumber.doubleValue()) / of(degree).mNumber.doubleValue();
-		return of(Math.exp(division));
+	public SmartDecimal root(Object index) {
+		double division = Math.log(mNumber.doubleValue()) / of(index).mNumber.doubleValue();
+		return of(Math.exp(division)).config(mScale, mRounding);
 	}
 
 	/**

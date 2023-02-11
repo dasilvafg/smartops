@@ -3,6 +3,8 @@ package com.github.dasilvafg.smartops;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URL;
+import java.net.URLStreamHandler;
 import java.text.Normalizer;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -236,11 +238,31 @@ public final class Commons {
 	 * <a href="https://www.rfc-editor.org/rfc/rfc3696#section-3">RFC-3696</a>.
 	 * 
 	 * @param addr
-	 *            The email
-	 * @return {@code true} if the email is valid.
+	 *            The address to validade.
+	 * @return {@code true} if the address is valid.
 	 */
 	public static boolean isEmail(String addr) {
 		return addr != null && addr.matches(REXP_EMAIL);
+	}
+
+	/**
+	 * Determines whether a string is a valid URL according to the rules from
+	 * <a href="https://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a>.
+	 * 
+	 * <p>
+	 * This method delegates to {@link URL#URL(URL, String, URLStreamHandler)}.
+	 * 
+	 * @param url
+	 *            The URL to validate.
+	 * @return {@code true} if the URL is valid.
+	 */
+	public static boolean isUrl(String url) {
+		try {
+			new URL((URL) null, url, null);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	/**
