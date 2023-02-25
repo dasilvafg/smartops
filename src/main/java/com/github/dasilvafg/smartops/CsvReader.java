@@ -12,7 +12,7 @@ import java.io.Reader;
  */
 public class CsvReader extends BufferedReader {
 
-	private final String delims;
+	private final String delim;
 
 	/**
 	 * Constructs a new {@link CsvReader} from another reader with a set of
@@ -20,15 +20,15 @@ public class CsvReader extends BufferedReader {
 	 * 
 	 * @param reader
 	 *            The input reader.
-	 * @param delims
-	 *            The characters to be accepted as field delimiters.
+	 * @param delim
+	 *            The string to be recognized as field delimiter.
 	 */
-	public CsvReader(Reader reader, String delims) {
+	public CsvReader(Reader reader, String delim) {
 		super(reader);
-		if (delims == null || delims.isEmpty()) {
+		if (delim == null || delim.isEmpty()) {
 			throw new IllegalArgumentException("delims cannot be empty");
 		}
-		this.delims = delims;
+		this.delim = delim;
 	}
 
 	/**
@@ -41,7 +41,7 @@ public class CsvReader extends BufferedReader {
 	 */
 	public CsvTokenizer readCsv() throws IOException {
 		String line = super.readLine();
-		return (line != null) ? new CsvTokenizer(line, delims) : null;
+		return (line != null) ? new CsvTokenizer(line, delim) : null;
 	}
 
 }

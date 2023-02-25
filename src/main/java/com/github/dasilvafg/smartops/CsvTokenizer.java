@@ -21,20 +21,20 @@ public class CsvTokenizer implements Enumeration<String> {
 	private int idx;
 
 	/**
-	 * Constructs the tokenizer from the CSV record with the given delimiters.
+	 * Constructs the tokenizer from the CSV record with the given delimiter.
 	 * 
 	 * @param str
 	 *            The CSV record.
-	 * @param delims
-	 *            The characters accepted as fied separators.
+	 * @param delim
+	 *            The string recognized as field separator.
 	 */
-	public CsvTokenizer(String str, String delims) {
-		delims = delims.replaceAll("\\$", "\\\\\\$");
-		delims = delims.replaceAll("\\[", "\\\\\\[");
-		delims = delims.replaceAll("\\]", "\\\\\\]");
-		delims = "[" + delims + "]";
-		String regExp = "(?:^|" + delims + ")\\s*(?:(?:(?=\")\"([^\"].*?)\")|(?:(?!\")(.*?)))(?="
-				+ delims + "|$)";
+	public CsvTokenizer(String str, String delim) {
+		delim = delim.replaceAll("\\$", "\\\\\\$");
+		delim = delim.replaceAll("\\[", "\\\\\\[");
+		delim = delim.replaceAll("\\]", "\\\\\\]");
+		delim = "[" + delim + "]";
+		String regExp = "(?:^|" + delim + ")\\s*(?:(?:(?=\")\"([^\"].*?)\")|(?:(?!\")(.*?)))(?="
+				+ delim + "|$)";
 		Matcher tokenizer = Pattern.compile(regExp).matcher(str);
 		list = new ArrayList<>();
 		while (tokenizer.find()) {

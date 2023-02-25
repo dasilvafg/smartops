@@ -23,8 +23,8 @@ import java.util.Map;
 import org.w3c.dom.NodeList;
 
 /**
- * Wrapper class with various utility functions. All methods are thread-safe and
- * null-safe.
+ * Utility class with several methods for validation and conversion. All methods
+ * are thread-safe and null-safe.
  * 
  * @author Fábio Silva
  * @since 1.0.0
@@ -32,6 +32,7 @@ import org.w3c.dom.NodeList;
 public final class Commons {
 
 	private static final String REXP_EMAIL = "^(\\p{Alnum}+((\\.|_+|-+)\\p{Alnum}+)*){1,64}@(\\p{Alnum}+((\\.|_+|-+)\\p{Alnum}+)*){1,255}$";
+	private static final String REXP_WORD = "(?s)[\\p{L}\\d]+([_-][\\p{L}\\d]+)*('[\\p{L}\\d]*)?|'[\\p{L}\\d]+$";
 	private static final String REXP_DATE_SIMP = "^\\d{4}(\\-\\d{2}){2}$";
 	private static final String REXP_DATE_TIME = "^\\d{4}(\\-\\d{2}){2}T\\d{2}(:\\d{2}){1,2}(\\.\\d{3}Z?)$";
 	private static final String REXP_DATE_OFFS = "^\\d{4}(\\-\\d{2}){2}T\\d{2}(:\\d{2}){2}\\.\\d+[+-]\\d{2}:?\\d{2}$";
@@ -166,7 +167,7 @@ public final class Commons {
 	 *            The string.
 	 * @return {@code true} if the string is not null and numeric.
 	 */
-	public static boolean isNumeric(String str) {
+	public static boolean isDecimal(String str) {
 		return str != null && str.matches("(?s)^[+-]?\\d+(\\.\\d+)?([Ee][+-]?\\d+)?$");
 	}
 
@@ -178,7 +179,7 @@ public final class Commons {
 	 *            The string.
 	 * @return {@code true} if the string is not null and a decimal number.
 	 */
-	public static boolean isDecimal(String str) {
+	public static boolean isInteger(String str) {
 		return str != null && str.matches("(?s)^[+-]?\\d+$");
 	}
 
@@ -228,8 +229,7 @@ public final class Commons {
 	 * @return {@code true} if the string is a valid word.
 	 */
 	public static boolean isWord(String str) {
-		return str != null && str
-				.matches("(?s)[\\p{L}\\d]+([_-][\\p{L}\\d]+)*('[\\p{L}\\d]*)?|'[\\p{L}\\d]+$");
+		return str != null && str.matches(REXP_WORD);
 	}
 
 	/**
@@ -312,29 +312,9 @@ public final class Commons {
 	 * @return The truncated string.
 	 */
 	public static String truncate(String str, int maxlen) {
-		return truncate(str, maxlen, false);
-	}
-
-	/**
-	 * Truncates a string to a given maximum length, optionally normalizing the
-	 * string before truncation.
-	 * 
-	 * @param str
-	 *            The string.
-	 * @param maxlen
-	 *            The maximum length.
-	 * @param withNormalization
-	 *            {@link #normalize(String) Normalize} the string before
-	 *            truncating.
-	 * @return The truncated string.
-	 */
-	public static String truncate(String str, int maxlen, boolean withNormalization) {
-		if (withNormalization) {
-			str = normalize(str);
-		} else if (str == null) {
+		if (str == null) {
 			str = "";
-		}
-		if (str.length() > maxlen) {
+		} else if (str.length() > maxlen) {
 			str = str.substring(0, maxlen);
 		}
 		return str;
@@ -420,9 +400,12 @@ public final class Commons {
 						LocalDate.parse(str).atStartOfDay(ZoneId.systemDefault()).toInstant());
 			}
 			if (str.matches(REXP_DATE_TIME)) {
-				LocalDateTime date = str.endsWith("Z") ? ZonedDateTime.parse(str).toLocalDateTime()
-						: LocalDateTime.parse(str);
-				return Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
+				if (str.endsWith("Z")) {
+					return Date.from(ZonedDateTime.parse(str).toInstant());
+				} else {
+					return Date.from(
+							LocalDateTime.parse(str).atZone(ZoneId.systemDefault()).toInstant());
+				}
 			}
 			if (str.matches(REXP_DATE_OFFS)) {
 				int n = str.length();

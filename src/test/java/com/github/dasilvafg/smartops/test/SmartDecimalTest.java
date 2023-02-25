@@ -21,8 +21,8 @@ public class SmartDecimalTest {
 				"-12.34");
 		assertEquals(SmartDecimal.of(12.3456).config(2, RoundingMode.FLOOR).toString(), "12.34");
 		assertEquals(SmartDecimal.of(-12.3456).config(2, RoundingMode.FLOOR).toString(), "-12.35");
-		assertEquals(SmartDecimal.of(256).root(4).precison(0).toString(), "4");
-		assertEquals(SmartDecimal.of(4).power(4).precison(0).toString(), "256");
+		assertEquals(SmartDecimal.of(256).root(4).toString(), "4");
+		assertEquals(SmartDecimal.of(4).power(4).toString(), "256");
 	}
 
 }

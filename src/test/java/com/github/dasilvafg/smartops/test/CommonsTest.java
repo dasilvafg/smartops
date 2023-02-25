@@ -5,11 +5,11 @@ import static com.github.dasilvafg.smartops.Commons.coalesce;
 import static com.github.dasilvafg.smartops.Commons.isAlpha;
 import static com.github.dasilvafg.smartops.Commons.isBase64;
 import static com.github.dasilvafg.smartops.Commons.isBlank;
-import static com.github.dasilvafg.smartops.Commons.isDecimal;
+import static com.github.dasilvafg.smartops.Commons.isInteger;
 import static com.github.dasilvafg.smartops.Commons.isEmail;
 import static com.github.dasilvafg.smartops.Commons.isEmpty;
 import static com.github.dasilvafg.smartops.Commons.isHexa;
-import static com.github.dasilvafg.smartops.Commons.isNumeric;
+import static com.github.dasilvafg.smartops.Commons.isDecimal;
 import static com.github.dasilvafg.smartops.Commons.isWord;
 import static com.github.dasilvafg.smartops.Commons.normalize;
 import static org.junit.Assert.assertEquals;
@@ -106,29 +106,29 @@ public class CommonsTest {
 
 	@Test
 	public void testIsNumeric() {
-		assertFalse(isNumeric(null));
-		assertFalse(isNumeric(""));
-		assertFalse(isNumeric("a111b"));
-		assertTrue(isNumeric("234"));
-		assertTrue(isNumeric("234.5"));
-		assertTrue(isNumeric("234.5678"));
-		assertTrue(isNumeric("234.567e89"));
-		assertTrue(isNumeric("-23"));
-		assertTrue(isNumeric("-23.45"));
-		assertTrue(isNumeric("-23.45e18"));
+		assertFalse(isDecimal(null));
+		assertFalse(isDecimal(""));
+		assertFalse(isDecimal("a111b"));
+		assertTrue(isDecimal("234"));
+		assertTrue(isDecimal("234.5"));
+		assertTrue(isDecimal("234.5678"));
+		assertTrue(isDecimal("234.567e89"));
+		assertTrue(isDecimal("-23"));
+		assertTrue(isDecimal("-23.45"));
+		assertTrue(isDecimal("-23.45e18"));
 	}
 
 	@Test
 	public void testIsDecimal() {
-		assertFalse(isDecimal(null));
-		assertFalse(isDecimal(""));
-		assertFalse(isDecimal("111b"));
-		assertTrue(isDecimal("234"));
-		assertFalse(isDecimal("234.5"));
-		assertFalse(isDecimal("234.5678"));
-		assertFalse(isDecimal("234.567e89"));
-		assertFalse(isDecimal("-23."));
-		assertFalse(isDecimal("-23:45"));
+		assertFalse(isInteger(null));
+		assertFalse(isInteger(""));
+		assertFalse(isInteger("111b"));
+		assertTrue(isInteger("234"));
+		assertFalse(isInteger("234.5"));
+		assertFalse(isInteger("234.5678"));
+		assertFalse(isInteger("234.567e89"));
+		assertFalse(isInteger("-23."));
+		assertFalse(isInteger("-23:45"));
 	}
 
 	@Test

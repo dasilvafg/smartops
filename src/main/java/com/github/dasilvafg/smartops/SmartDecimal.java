@@ -6,18 +6,23 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 /**
- * Helper class to perform sequential arithmetic calculations.
+ * Utility class to perform sequential arithmetical calculations.
  * 
  * <p>
  * This class uses a {@link BigDecimal} for its numeric representation, and
  * delegates to that class most of its operations. Methods are designed to
  * accept three types of numeric values: {@link Number}, {@link String}, and
- * {@link SmartDecimal} itself. When passing a {@link String} argument, the
- * expression must be acceptable to {@link BigDecimal#BigDecimal(String)}. This
- * validation can be performed by {@link Commons#isDecimal(String)}.
+ * {@link SmartDecimal} itself.
  * 
  * <p>
- * Scaling is never applied automatically during arithmetic operations. Methods
+ * When passing a {@link String} argument, the expression must be acceptable to
+ * {@link BigDecimal#BigDecimal(String)}. This validation can be performed by
+ * {@link Commons#isDecimal(String)}.
+ * 
+ * <p>
+ * Scaling is not applied automatically during arithmetic operations, except in
+ * those involving division, which delegates to
+ * {@link BigDecimal#divide(BigDecimal, int, RoundingMode)}. Separate methods
  * are provided to set precision, rounding mode, or both.
  * 
  * <p>
@@ -27,7 +32,8 @@ import java.math.RoundingMode;
  * throw an exception.
  * 
  * <p>
- * This class is immutable and thread-safe: all methods operate on a new copy.
+ * This class is immutable and thread-safe: all write methods operate on a new
+ * copy.
  * 
  * @author Fábio Silva
  * @since 1.0.0
@@ -83,7 +89,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * <p>
 	 * If the value is a {@link SmartDecimal}, its configuration for scale and
 	 * rounding will be copied to the new instance. Otherwise the scale will be
-	 * retrieved from the resulting {@link BigDecimal}, and the rouding will by
+	 * retrieved from the resulting {@link BigDecimal}, and the rouding will be
 	 * {@link RoundingMode#HALF_EVEN}.
 	 * 
 	 * <p>
@@ -112,7 +118,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 		} else if (value instanceof String) {
 			mNumber = new BigDecimal((String) value);
 		} else {
-			throw new NumberFormatException("illegal argument: " + value);
+			throw new NumberFormatException("invalid number: " + value);
 		}
 		if (mRounding == null) {
 			mScale = mNumber.scale();
@@ -129,8 +135,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and sets new configuration for scale and rounding,
-	 * applying it immediatly.
+	 * Sets new configuration for scale and rounding, applying it immediatly.
 	 * 
 	 * @param newScale
 	 *            The new scale.
@@ -152,8 +157,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and sets new configuration for scale, applying it
-	 * immediatly.
+	 * Sets new configuration for scale, applying it immediatly.
 	 * 
 	 * @param newScale
 	 *            The new scale.
@@ -169,8 +173,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and sets new configuration for rounding, applying it
-	 * immediatly.
+	 * Sets new configuration for rounding, applying it immediatly.
 	 * 
 	 * @param newRounding
 	 *            The new rounding mode.
@@ -186,8 +189,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and applies a previously set configuration for scale
-	 * and rounding to the clone.
+	 * Applies a previously set configuration for scale and rounding.
 	 * 
 	 * <p>
 	 * This method delegates to {@link BigDecimal#setScale(int, RoundingMode)}.
@@ -201,7 +203,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and adds the addend to the clone.
+	 * Adds the addend to this number.
 	 * 
 	 * <p>
 	 * This method delegates to {@link BigDecimal#add(BigDecimal)}.
@@ -219,7 +221,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and subtracts the subtrahend from the clone.
+	 * Subtracts the subtrahend from this number.
 	 * 
 	 * <p>
 	 * This method delegates to {@link BigDecimal#subtract(BigDecimal)}.
@@ -238,7 +240,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and multiplies the clone by the multiplier.
+	 * Multiplies this number by the multiplier.
 	 * 
 	 * <p>
 	 * This method delegates to {@link BigDecimal#multiply(BigDecimal)}.
@@ -257,8 +259,8 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and divides the clone by the divisor, applying the
-	 * previously set configuration for scale and rounding.
+	 * Divides this number by the divisor, applying the previously set
+	 * configuration for scale and rounding.
 	 * 
 	 * <p>
 	 * This method delegates to
@@ -277,7 +279,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and sets the clone to its absolute value.
+	 * Gets the absolute value of this number.
 	 * 
 	 * <p>
 	 * This method delegates to {@link BigDecimal#abs()}.
@@ -291,7 +293,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Raises this instance to an arbitrary exponent.
+	 * Raises this number to an arbitrary exponent.
 	 * 
 	 * <p>
 	 * The calculation is done using the following algorithm:
@@ -326,7 +328,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Extracts an arbitrary root from this instance using logarithms, allowing
+	 * Extracts an arbitrary root from this number using logarithms, allowing
 	 * the index to be a floating point value.
 	 * 
 	 * <p>
@@ -348,8 +350,8 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and multiplies the clone by a percentage rate,
-	 * applying the previously set configuration for scale and rounding.
+	 * Multiplies this number by a percentage rate, applying the previously set
+	 * configuration for scale and rounding.
 	 * 
 	 * @param rate
 	 *            The percentage rate.
@@ -362,8 +364,8 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and adds a percentage rate to the clone, applying
-	 * the previously set configuration for scale and rounding.
+	 * Adds a percentage rate to this number, applying the previously set
+	 * configuration for scale and rounding.
 	 * 
 	 * @param rate
 	 *            The percentage rate.
@@ -376,8 +378,8 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	}
 
 	/**
-	 * Clones this instance and subtracts a percentage rate from the clone,
-	 * applying the previously set configuration for scale and rounding.
+	 * Subtracts a percentage rate from this number, applying the previously set
+	 * configuration for scale and rounding.
 	 * 
 	 * @param rate
 	 *            The percentage rate.
@@ -471,7 +473,7 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 * 
 	 * @return The {@code byte} representation.
 	 */
-	public short toByte() {
+	public byte toByte() {
 		return mNumber.byteValue();
 	}
 
@@ -520,7 +522,11 @@ public final class SmartDecimal implements Serializable, Cloneable, Comparable<S
 	 */
 	@Override
 	public int compareTo(SmartDecimal obj) {
-		return mNumber.compareTo(obj.mNumber);
+		if (obj != null) {
+			return mNumber.compareTo(obj.mNumber);
+		} else {
+			return -1;
+		}
 	}
 
 }
