@@ -1,10 +1,19 @@
 package com.github.dasilvafg.smartops;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLStreamHandler;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.Normalizer;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -586,6 +595,139 @@ public final class Commons {
 			}
 		}
 		throw new IllegalArgumentException("Unknown date type: " + obj);
+	}
+
+	/**
+	 * Detects the MIME type from a data source.
+	 * 
+	 * <p>
+	 * If the source is a {@link Path}, {@link File}, {@link URL} or {@link URI}
+	 * instance, this method delegates to {@link Files#probeContentType(Path)}.
+	 * 
+	 * <p>
+	 * If the source is a {@code byte[]} with more than 4 bytes, this method
+	 * will try to determine the MIME type from the first 4 bytes. If the type
+	 * is not recognized, the default {@code application/octet-stream} will be
+	 * returned. If the source is a {@code char[]} or a {@link String} with more
+	 * than 5 chars, this method will try to determine the MIME type from the
+	 * first 5 chars. If the type is not recognized, the default
+	 * {@code text/plain} will be returned.
+	 * 
+	 * <p>
+	 * If the source is an {@link InputStream}, this method will try to read up
+	 * to 10 bytes and apply the same algorithm as to a {@code byte[]} source.
+	 * If the source is a {@link Reader}, this method will try to read up to 10
+	 * chars and apply the same algorithm as to a {@code char[]} source.
+	 * <b>Either of these attempts may spoil the source if it does not support
+	 * mark/reset operations.</b>
+	 * 
+	 * <p>
+	 * If none of the above tests finds a match, this method returns
+	 * {@code null}.
+	 * 
+	 * @param src
+	 *            The data source.
+	 * @return The MIME type or {@code null} if not recognized.
+	 */
+	public static String detectMimeType(Object src) {
+		try {
+			if (src instanceof Path) {
+				return Files.probeContentType((Path) src);
+			}
+			if (src instanceof File) {
+				return Files.probeContentType(((File) src).toPath());
+			}
+			if (src instanceof URL) {
+				return Files.probeContentType(Paths.get(((URL) src).toURI()));
+			}
+			if (src instanceof URI) {
+				return Files.probeContentType(Paths.get((URI) src));
+			}
+		} catch (IOException | URISyntaxException e) {
+			return null;
+		}
+
+		int n = 0;
+		byte[] bin = null;
+		char[] chr = null;
+
+		try {
+			if (src instanceof byte[]) {
+				bin = (byte[]) src;
+				n = bin.length;
+			} else if (src instanceof char[]) {
+				chr = (char[]) src;
+				n = chr.length;
+			} else if (src instanceof InputStream) {
+				InputStream in = (InputStream) src;
+				bin = new byte[10];
+				in.mark(bin.length);
+				n = in.read(bin);
+				in.reset();
+			} else if (src instanceof Reader) {
+				Reader in = (Reader) src;
+				chr = new char[10];
+				in.mark(chr.length);
+				n = in.read(chr);
+				in.reset();
+			}
+		} catch (IOException e) {
+			return null;
+		}
+
+		if (bin != null && n > 4) {
+			int n0 = bin[0] & 0xFF;
+			int n1 = bin[1] & 0xFF;
+			int n2 = bin[2] & 0xFF;
+			int n3 = bin[3] & 0xFF;
+			if (n0 == 0xFF && n1 == 0xD8 && n2 == 0xFF && n3 == 0xE0) {
+				return "image/jpeg";
+			}
+			if (n0 == 0x89 && n1 == 0x50 && n2 == 0x4E && n3 == 0x47) {
+				return "image/png";
+			}
+			if (n0 == 0x47 && n1 == 0x49 && n2 == 0x46 && n3 == 0x38) {
+				return "image/gif";
+			}
+			if (n0 == 0x52 && n1 == 0x49 && n2 == 0x46 && n3 == 0x46) {
+				return "image/webp";
+			}
+			if (n0 == 0x25 && n1 == 0x50 && n2 == 0x44 && n3 == 0x46) {
+				return "application/pdf";
+			}
+			if (n0 == 0x50 && n1 == 0x4B && n2 == 0x03 && n3 == 0x04) {
+				return "application/zip";
+			}
+			return "application/octet-stream";
+		}
+
+		if (chr != null && n > 5) {
+			if (chr[0] == '{') {
+				return "application/json";
+			}
+			if (chr[0] == '<' && chr[1] == '?' && Character.toLowerCase(chr[2]) == 'x'
+					&& Character.toLowerCase(chr[3]) == 'm'
+					&& Character.toLowerCase(chr[4]) == 'l') {
+				return "application/xml";
+			}
+			return "text/plain";
+		}
+
+		if (src instanceof String && ((String) src).length() > 5) {
+			String str = (String) src;
+			if (str.charAt(0) == '{') {
+				return "application/json";
+			}
+			if (str.charAt(0) == '<' && str.charAt(1) == '?'
+					&& Character.toLowerCase(str.charAt(2)) == 'x'
+					&& Character.toLowerCase(str.charAt(3)) == 'm'
+					&& Character.toLowerCase(str.charAt(4)) == 'l') {
+				return "application/xml";
+			}
+			return "text/plain";
+		}
+
+		return null;
 	}
 
 }
