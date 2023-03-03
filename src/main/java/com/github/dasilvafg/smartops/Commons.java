@@ -609,8 +609,8 @@ public final class Commons {
 	 * will try to determine the MIME type from the first 4 bytes. If the type
 	 * is not recognized, the default {@code application/octet-stream} will be
 	 * returned. If the source is a {@code char[]} or a {@link String} with more
-	 * than 5 chars, this method will try to determine the MIME type from the
-	 * first 5 chars. If the type is not recognized, the default
+	 * than 10 chars, this method will try to determine the MIME type from the
+	 * first 10 chars. If the type is not recognized, the default
 	 * {@code text/plain} will be returned.
 	 * 
 	 * <p>
@@ -680,54 +680,72 @@ public final class Commons {
 			int n1 = bin[1] & 0xFF;
 			int n2 = bin[2] & 0xFF;
 			int n3 = bin[3] & 0xFF;
-			if (n0 == 0xFF && n1 == 0xD8 && n2 == 0xFF && n3 == 0xE0) {
-				return "image/jpeg";
-			}
-			if (n0 == 0x89 && n1 == 0x50 && n2 == 0x4E && n3 == 0x47) {
-				return "image/png";
-			}
-			if (n0 == 0x47 && n1 == 0x49 && n2 == 0x46 && n3 == 0x38) {
-				return "image/gif";
-			}
-			if (n0 == 0x52 && n1 == 0x49 && n2 == 0x46 && n3 == 0x46) {
-				return "image/webp";
-			}
 			if (n0 == 0x25 && n1 == 0x50 && n2 == 0x44 && n3 == 0x46) {
 				return "application/pdf";
 			}
 			if (n0 == 0x50 && n1 == 0x4B && n2 == 0x03 && n3 == 0x04) {
 				return "application/zip";
 			}
+			if (n0 == 0x47 && n1 == 0x49 && n2 == 0x46 && n3 == 0x38) {
+				return "image/gif";
+			}
+			if (n0 == 0xFF && n1 == 0xD8 && n2 == 0xFF && n3 == 0xE0) {
+				return "image/jpeg";
+			}
+			if (n0 == 0x89 && n1 == 0x50 && n2 == 0x4E && n3 == 0x47) {
+				return "image/png";
+			}
+			if (n0 == 0x52 && n1 == 0x49 && n2 == 0x46 && n3 == 0x46) {
+				return "image/webp";
+			}
 			return "application/octet-stream";
 		}
 
-		if (chr != null && n > 5) {
-			if (chr[0] == '{') {
+		Object str = (chr != null && n > 10) ? chr
+				: ((src instanceof String && ((String) src).length() > 10) ? src : null);
+		if (str != null) {
+			if (stringStartsWith(str, "{")) {
 				return "application/json";
 			}
-			if (chr[0] == '<' && chr[1] == '?' && Character.toLowerCase(chr[2]) == 'x'
-					&& Character.toLowerCase(chr[3]) == 'm'
-					&& Character.toLowerCase(chr[4]) == 'l') {
-				return "application/xml";
+			if (stringStartsWith(str, "#!")) {
+				return "application/x-sh";
 			}
-			return "text/plain";
-		}
-
-		if (src instanceof String && ((String) src).length() > 5) {
-			String str = (String) src;
-			if (str.charAt(0) == '{') {
-				return "application/json";
+			if (stringStartsWith(str, "<?php")) {
+				return "application/x-httpd-php";
 			}
-			if (str.charAt(0) == '<' && str.charAt(1) == '?'
-					&& Character.toLowerCase(str.charAt(2)) == 'x'
-					&& Character.toLowerCase(str.charAt(3)) == 'm'
-					&& Character.toLowerCase(str.charAt(4)) == 'l') {
-				return "application/xml";
+			if (stringStartsWith(str, "<?xml")) {
+				return "text/xml";
+			}
+			if (stringStartsWith(str, "<html") || stringStartsWith(str, "<!doctype")) {
+				return "text/html";
+			}
+			if (stringStartsWith(str, "<svg")) {
+				return "image/svg+xml";
 			}
 			return "text/plain";
 		}
 
 		return null;
+	}
+
+	private static boolean stringStartsWith(Object obj, String prefix) {
+		int i = 0;
+		if (obj instanceof char[]) {
+			char[] str = (char[]) obj;
+			for (i = 0; i < str.length && i < prefix.length(); i++) {
+				if (Character.toLowerCase(str[i]) != prefix.charAt(i)) {
+					return false;
+				}
+			}
+		} else if (obj instanceof String) {
+			String str = (String) obj;
+			for (i = 0; i < str.length() && i < prefix.length(); i++) {
+				if (Character.toLowerCase(str.charAt(i)) != prefix.charAt(i)) {
+					return false;
+				}
+			}
+		}
+		return i == prefix.length();
 	}
 
 }
